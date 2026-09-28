@@ -79,7 +79,6 @@
     if (k.length > 3 && k.endsWith("s")) v.push(k.slice(0, -1));
     return v;
   }
-  const titleCase = (s) => s.replace(/(^|[\s\-(])([a-z])/g, (m, a, b) => a + b.toUpperCase());
 
   function compilePrompt(raw, id) {
     const [text, body] = raw;
@@ -159,7 +158,7 @@
     countdown: $("countdown"), cdNum: $("cdNum"),
     bar: $("answerBar"), ans: $("ans"), clockNum: $("clockNum"), ring: $("ring"), timebar: $("timebar"), toast: $("toast"),
     result: $("result"), tierIcon: $("tierIcon"), tName: $("tName"), tAns: $("tAns"), tPts: $("tPts"), tSink: $("tSink"),
-    tFlav: $("tFlav"), tDeeper: $("tDeeper"), descend: $("descend"),
+    tFlav: $("tFlav"), descend: $("descend"),
     menu: $("menu"), menuBtn: $("menuBtn"), soundBtn: $("soundBtn"),
   };
 
@@ -690,11 +689,6 @@
     el.tPts.style.color = res.pts ? T.color : "";
     el.tSink.textContent = sink ? `sink ${fmtM(sink)}` : state.mode ? "no sink" : `oxygen: ${state.tanks} tank${state.tanks === 1 ? "" : "s"} left`;
     el.tFlav.textContent = pick(T.flav);
-    if (res.tier < 3) {
-      const deep = state.prompt.tiers[3].length ? state.prompt.tiers[3] : state.prompt.tiers[2];
-      const ex = shuffle(deep.slice()).slice(0, 3).map((a) => titleCase(a.split("/")[0]));
-      el.tDeeper.innerHTML = `${res.tier < 0 ? "you could have said" : "deeper catches"}: <b>${ex.map(esc).join(" · ")}</b>`;
-    } else el.tDeeper.textContent = "";
     const last = state.mode ? state.round >= state.mode : state.tanks <= 0;
     el.descend.textContent = last ? "SURFACE THE LOG ▲" : "DESCEND ▼";
     el.result.hidden = false;
