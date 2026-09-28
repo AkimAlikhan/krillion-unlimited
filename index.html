@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Krillion Unlimited</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=Silkscreen:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="sea"></canvas>
+<div class="scan" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<header class="hud" id="hud" hidden>
+  <div class="gauge depth"><span class="lbl">DEPTH</span><span id="hudDepth" class="val">0m</span></div>
+  <div class="prog">
+    <div id="squares" class="squares"></div>
+    <div id="progLbl" class="lbl">PROMPT 1 OF 20</div>
+  </div>
+  <div class="gauge score"><span class="lbl">SCORE</span><span id="hudScore" class="val">0</span></div>
+</header>
+
+<button id="menuBtn" class="iconbtn tl" aria-label="Menu">
+  <svg viewBox="0 0 16 16" width="16" height="16"><path fill="currentColor" d="M2 3h12v2H2zM2 7h12v2H2zM2 11h12v2H2z"/></svg>
+</button>
+<button id="soundBtn" class="iconbtn tr" aria-label="Toggle sound">
+  <svg viewBox="0 0 16 16" width="16" height="16"><path fill="currentColor" d="M2 6h3l4-3v10l-4-3H2z"/><path id="soundWaves" fill="currentColor" d="M11 5h1v6h-1zM13 3h1v10h-1z"/></svg>
+</button>
+
+<nav id="menu" class="menu" hidden>
+  <button data-act="surface">▲ SURFACE NOW <small>end this dive &amp; see your log</small></button>
+  <button data-act="quit">⟲ QUIT TO TITLE <small>abandon this dive</small></button>
+  <button data-act="close">✕ CLOSE</button>
+</nav>
+
+<!-- TITLE -->
+<section id="title" class="screen">
+  <div class="title-top">
+    <h1 class="logo" data-text="KRILLION">KRILLION</h1>
+    <div class="sub">THE UNLIMITED DIVE</div>
+    <p class="tag">dive after dive · rarer answers sink deeper</p>
+  </div>
+  <div class="title-bottom">
+    <details class="how">
+      <summary>▸ HOW TO PLAY</summary>
+      <ol>
+        <li>Pick a dive length. 20, 30, 50 prompts, or endless.</li>
+        <li>Each prompt gives you a few seconds to name ONE thing.</li>
+        <li>Rare answers score big. Obvious ones float.</li>
+        <li>Plankton 10 · Schooler 30 · Rare 60 · One in a Krillion 100.</li>
+        <li>Nonsense doesn't count. You can retry until the clock runs out.</li>
+        <li>A perfect dive touches the trench floor at 10,935m.</li>
+        <li>Endless: 3 oxygen tanks. Every timeout burns one.</li>
+      </ol>
+    </details>
+    <div class="opt-row">
+      <span class="opt-lbl">DIVE LENGTH</span>
+      <div class="seg" id="modeSeg">
+        <button data-v="20">20</button>
+        <button data-v="30">30</button>
+        <button data-v="50">50</button>
+        <button data-v="0">∞</button>
+      </div>
+    </div>
+    <div class="opt-row">
+      <span class="opt-lbl">CLOCK</span>
+      <div class="seg" id="timeSeg">
+        <button data-v="15">15s</button>
+        <button data-v="25">25s</button>
+        <button data-v="40">40s</button>
+      </div>
+    </div>
+    <button id="begin" class="bigbtn glow-cyan">▼ BEGIN DESCENT ▼</button>
+    <div class="title-foot">
+      <span id="diveNo">DIVE #1</span>
+      <span id="bestLbl">BEST —</span>
+    </div>
+  </div>
+</section>
+
+<!-- PLAY -->
+<section id="play" class="screen" hidden>
+  <div class="card" id="card">
+    <div class="card-k" id="cardK">PROMPT 1 OF 20</div>
+    <div class="card-q" id="cardQ">…</div>
+    <div class="card-h">▼ rarer answers sink deeper ▼</div>
+  </div>
+
+  <div id="banner" class="banner" hidden></div>
+
+  <div id="countdown" class="pill" hidden>descending · the clock starts in <b id="cdNum">3</b></div>
+
+  <form id="answerBar" class="answerbar" autocomplete="off" hidden>
+    <div class="clock">
+      <svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="19" class="ring-bg"/><circle id="ring" cx="22" cy="22" r="19" class="ring"/></svg>
+      <span id="clockNum">25</span>
+    </div>
+    <div class="inputwrap">
+      <input id="ans" type="text" placeholder="type one answer…" maxlength="60" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="go">
+      <div class="timebar"><i id="timebar"></i></div>
+      <div id="toast" class="toast"></div>
+    </div>
+    <button type="submit" class="divebtn">DIVE</button>
+  </form>
+
+  <div id="result" class="result" hidden>
+    <canvas id="tierIcon" width="96" height="96"></canvas>
+    <div class="t-name" id="tName">RARE</div>
+    <div class="t-ans" id="tAns"></div>
+    <div class="t-pts"><span id="tPts">+60 PTS</span> · <span id="tSink">sink 600m</span></div>
+    <div class="t-flav" id="tFlav"></div>
+    <div class="t-deeper" id="tDeeper"></div>
+    <button id="descend" class="bigbtn small glow-pink">DESCEND ▼</button>
+  </div>
+</section>
+
+<!-- END -->
+<section id="end" class="screen" hidden>
+  <div class="log">
+    <div class="log-k" id="endK">DIVE LOG · 20 PROMPTS</div>
+    <div class="log-depth" id="endDepth">0m</div>
+    <div class="log-zone" id="endZone">THE SUNLIGHT ZONE</div>
+    <div class="log-stats">
+      <div><span class="lbl">SCORE</span><b id="endScore">0</b></div>
+      <div><span class="lbl">AVG / PROMPT</span><b id="endAvg">0</b></div>
+      <div><span class="lbl">BEST</span><b id="endBest">—</b></div>
+    </div>
+    <div class="tally" id="tally"></div>
+    <div class="grid" id="grid"></div>
+    <details class="answers">
+      <summary>▸ YOUR ANSWERS</summary>
+      <ol id="ansList"></ol>
+    </details>
+    <div class="log-btns">
+      <button id="shareBtn" class="bigbtn small glow-pink">SHARE</button>
+      <button id="againBtn" class="bigbtn small glow-cyan">DIVE AGAIN ▼</button>
+    </div>
+    <button id="homeBtn" class="linkbtn">change dive length</button>
+  </div>
+</section>
+
+<script src="prompts.js"></script>
+<script src="prompts-more.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
